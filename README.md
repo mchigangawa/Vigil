@@ -1,341 +1,268 @@
 # Vigil
 
-A macOS menu bar utility with three toggles: **Keep Awake**, **Cleaning Mode**, and **Lock & Keep Awake**.
+A macOS menu bar utility that does three things well:
 
-No Dock icon, no accounts, no telemetry. Everything it stores stays in your own user preferences on this Mac. The one thing that touches the network is the update check, and only when you ask for it — see [Updates](#updates).
+- **Keep Awake** — stop the Mac sleeping, for a set time or until you say otherwise.
+- **Cleaning Mode** — switch off the keyboard and trackpad so you can wipe the machine down.
+- **Lock & Keep Awake** — lock the screen while a long build or download keeps running.
 
-- **Bundle identifier:** `zw.co.munyaradzichigangawa.Vigil`
-- **Requires:** macOS 13 (Ventura) or later, Apple Silicon or Intel
-- **Built with:** Swift 5, SwiftUI (`MenuBarExtra`) + AppKit
+No Dock icon, no accounts, no telemetry. Settings live in your own user defaults. The only network request Vigil ever makes is an update check, and only if you ask for one.
+
+**Requires** macOS 13 (Ventura) or later · Apple Silicon or Intel
+**Built with** Swift, SwiftUI (`MenuBarExtra`) and AppKit
 
 ---
 
-## Getting it running
+## Install
 
-### 1. Add your Apple ID to Xcode
+### From a release
 
-There is currently **no code signing identity on this machine**, so the app will not run until you add one:
+Download the latest `Vigil-vX.Y.Z.zip` from [Releases](../../releases), unzip it, and move `Vigil.app` to `/Applications`.
 
-1. Xcode → Settings → Accounts → **+** → Apple ID, and sign in.
-2. Open `Vigil.xcodeproj`, select the **Vigil** target → **Signing & Capabilities**.
-3. Leave *Automatically manage signing* checked, and pick your name under **Team** (it appears as "Your Name (Personal Team)").
+Release builds are **unsigned and un-notarized**, so the first launch needs a nudge past Gatekeeper: right-click the app → **Open** → **Open**. Once only.
 
-A free personal team is enough. No paid Apple Developer account is needed.
+### From source
 
-### 2. Build and run
+```sh
+git clone https://github.com/mchigangawa/Vigil.git
+cd Vigil
+open Vigil.xcodeproj
+```
 
-Press ⌘R in Xcode. The eye glyph appears in the menu bar; there is no Dock icon and no window.
+Select the **Vigil** target → **Signing & Capabilities** → set **Team** to your own (a free personal team is fine — no paid Apple Developer account needed), then press ⌘R.
 
-### 3. Grant Accessibility permission
+Setting a Team is worth doing even for local use. See [Accessibility and code signing](#accessibility-and-code-signing).
 
-On first launch Vigil explains what it needs before macOS asks. **Cleaning Mode** and **Lock & Keep Awake** need Accessibility permission:
+---
+
+## Permissions
+
+Vigil needs **Accessibility** permission for two of its three features:
 
 > System Settings → Privacy & Security → Accessibility → enable **Vigil**
 
-Keep Awake works without it.
+| Feature | Needs Accessibility | Why |
+|---|---|---|
+| Keep Awake | No | IOKit power assertions need no permission |
+| Cleaning Mode | Yes | Installs a `CGEventTap` to intercept input |
+| Lock & Keep Awake | Yes | Posts a synthetic ⌃⌘Q |
 
-### Troubleshooting: "I allowed Accessibility but Vigil says I didn't"
+Vigil explains this on first launch, before macOS raises its own dialog, and degrades gracefully if the permission is revoked while a feature is running.
 
-This is the most confusing failure in the project, and it is caused by **signing**, not by the app.
+### Accessibility and code signing
 
-macOS pins an Accessibility grant to the binary's *designated requirement*. Check yours:
+If you grant Accessibility and Vigil still behaves as though you didn't, the cause is almost always **signing** rather than a bug.
+
+macOS ties an Accessibility grant to the binary's *designated requirement*:
 
 ```sh
 codesign -d -r- /path/to/Vigil.app
 ```
 
-- **Ad-hoc signed** (no Team selected) prints `designated => cdhash H"..."`. That
-  hash changes on **every single build**, so the grant you gave applies only to
-  the exact binary that was running when you gave it. Rebuild, and Vigil stays
-  ticked in System Settings while the permission silently no longer applies —
-  which looks precisely like macOS ignoring you.
-- **Signed with a team** prints `identifier "zw.co.munyaradzichigangawa.Vigil"
-  and anchor apple generic and certificate leaf[...]`. That is stable across
-  rebuilds, so the grant sticks.
+- **Ad-hoc signed** (no Team selected) prints `designated => cdhash H"…"`. That hash changes on *every build*, so a grant applies only to the exact binary that was running when you gave it. Rebuild and the app stays ticked in System Settings while the permission silently stops applying.
+- **Signed with a team** prints `identifier "…" and anchor apple generic and certificate leaf[…]`, which is stable across rebuilds.
 
-**The durable fix is to select a Team** in Signing & Capabilities (step 1 above).
-A free personal team is enough. Vigil detects an ad-hoc build at runtime and
-says so in the permission notice, so you are not left guessing.
+Selecting a Team is the durable fix. Vigil detects an ad-hoc build at runtime and says so in the permission notice rather than leaving you guessing.
 
-**To check whether your build is affected:**
+To check a build:
 
 ```sh
-./Tools/check-signing.sh
+./Tools/check-signing.sh    # reports STABLE or STILL AD-HOC
 ```
 
-It reports STABLE or STILL AD-HOC and tells you what to do next.
-
-**To clear a stale grant:**
+To clear a stale grant:
 
 ```sh
 tccutil reset Accessibility zw.co.munyaradzichigangawa.Vigil
 ```
 
-Then relaunch and grant once more. If Vigil is already in the list, remove it
-with **−** and re-add it — re-ticking an existing stale entry does not always
-refresh the requirement.
+Then grant it once more. If Vigil is already listed, remove it with **−** and re-add — re-ticking a stale entry does not always refresh the requirement.
 
 ---
 
-## What each feature does
+## Features
 
 ### Keep Awake
 
-Holds an IOKit power assertion so the Mac will not idle-sleep. Durations: 15 min, 30 min, 1 hour, 4 hours, until turned off, or until Vigil quits. A live countdown shows in the menu.
+Holds an IOKit power assertion so the Mac will not idle-sleep. Durations: 15 minutes, 30 minutes, 1 hour, 4 hours, until turned off, or until Vigil quits. A live countdown shows in the menu.
 
-"Keep display on" is a separate switch — turn it off to let the screen sleep while a background build or download keeps running.
+*Keep display on* is a separate switch — turn it off to let the screen sleep while a background build or download keeps running.
 
-The two indefinite options differ in one way: **Until turned off** is restored if you relaunch Vigil; **Until Vigil quits** is not.
+The two open-ended options differ in one way: **Until turned off** is restored when Vigil relaunches, **Until Vigil quits** is not.
 
-#### No-limit mode requires wall power
+**No-limit durations require wall power.** An unbounded assertion on battery is how a laptop gets flattened in a bag, so on battery they are capped at 1 hour and the menu shows a "plug in for no time limit" hint. This is enforced in the coordinator rather than only in the UI, so every entry point obeys it — menu, shortcuts, Presentation Mode, Lock & Keep Awake, and session restore at launch.
 
-The two indefinite options only apply while the Mac is **plugged in** — an
-unbounded assertion on battery is how a laptop gets flattened in a bag. On
-battery they are capped at **1 hour**, and the chips are disabled in the menu
-with a "Plug in for no time limit" hint.
+- **Unplugging mid-session** converts a running no-limit session into a 1-hour one from that moment. It converts rather than stopping: unplugging to move desks shouldn't kill the session, but it must not stay unbounded either.
+- **Your stored preference is untouched.** Pick "Until turned off" on power, unplug, and only the *session* is capped — the default takes effect again next time you are plugged in.
+- **Desktop Macs** (no battery) always allow no-limit mode.
 
-This is enforced in `AppCoordinator`, not just in the UI, so every entry point
-obeys it: the menu, global shortcuts, Presentation Mode, Lock & Keep Awake, and
-session restore on launch.
-
-- **Unplugging mid-session** converts a running no-limit session into a 1-hour
-  one from that moment, with a notification. It converts rather than stopping,
-  because unplugging to walk to another desk shouldn't kill your session — but
-  it must not stay unbounded.
-- **Your stored preference is left alone.** If you picked "Until turned off"
-  while plugged in, that stays your default and takes effect again next time you
-  are on power; only the running session is capped.
-- **Desktop Macs** (no battery) are always allowed no-limit mode.
-
-Separately, Keep Awake also turns itself off below a battery threshold
-(default 10%) when not on AC power, with a notification saying why.
+Separately, Keep Awake stands down below a battery threshold (10% by default) when not on AC, with a notification saying why.
 
 ### Cleaning Mode
 
-Blocks the keyboard and trackpad system-wide so you can wipe the machine down, behind a full-screen overlay on every display and Space. The display is held awake for the duration, independently of your own Keep Awake setting.
+Blocks keyboard and pointer input system-wide behind a full-screen overlay on every display and Space, so you can wipe the machine down. The display is held awake for the duration, independently of your own Keep Awake setting.
 
-**Three independent ways out**, so you can never be locked out:
+**Three independent ways out**, so you cannot be locked out:
 
-1. **The auto-exit timer always fires** — 75 seconds by default, adjustable from 15 to 300 seconds. This is the guarantee; it does not depend on anything else working.
-2. **Press and hold the on-screen exit button** for 2 seconds (adjustable). This is the one gesture the event tap lets through. Sliding off the button cancels the hold, so a wiping hand cannot trigger it by accident.
-3. **Automatic teardown** if Accessibility permission is revoked mid-session, or if macOS disables the event tap — input is restored and you get a notification saying what happened.
+1. **The auto-exit timer always fires** — 75 seconds by default, adjustable from 15 to 300. It depends on nothing else working, which is what makes it the guarantee.
+2. **Click the on-screen exit button and hold the pointer still** for 2 seconds (adjustable). This is the one gesture the event tap lets through.
+3. **Automatic teardown** if Accessibility is revoked mid-session or macOS disables the event tap — input is restored and you are told what happened.
 
-Pointer *movement* is deliberately left unblocked. Clicks, keystrokes, scrolling and drags are all swallowed, but if the cursor were frozen you could not reach the exit button — which is precisely the lockout this feature must never create.
+Two deliberate details:
+
+- **Pointer movement is never blocked.** Clicks, keystrokes, scrolling and drags are all swallowed, but a frozen cursor could not reach the exit button — precisely the lockout this feature must never create.
+- **The exit gesture is "click, then hold still", not "press and hold".** With tap-to-click enabled — the default on Mac laptops — a tap is reported as a mouse-down and mouse-up about 60 ms apart, so cancelling a hold on release makes the gesture impossible for anyone who taps rather than physically depressing the trackpad. Only *leaving* the button cancels. A wiping hand drags the cursor away almost immediately, which is what keeps it hard to trigger by accident.
 
 ### Lock & Keep Awake
 
-Engages a Keep Awake assertion, then locks the screen — for leaving a long build running on an unattended machine.
+Engages a Keep Awake assertion, then locks the screen — for leaving a long job running on an unattended machine.
 
-If a Keep Awake timer is already running, it is left completely alone: not reset, not shortened, not extended.
+If a Keep Awake timer is already running it is left completely alone: not reset, not shortened, not extended. The menu row and the notification both state how long the Mac will stay awake, so the duration is never a surprise.
 
-Locking posts a synthetic ⌃⌘Q. If the screen is still unlocked 0.6s later, it falls back to the login window's own `CGSession -suspend` helper.
+Locking posts a synthetic ⌃⌘Q. If the screen is still unlocked 0.6 s later, it falls back to the login window's own `CGSession -suspend` helper.
 
 ### Supporting features
 
 | Feature | Notes |
 |---|---|
-| Menu bar icon states | Distinct glyph for idle / Keep Awake / Cleaning Mode, tinted when active |
-| Global shortcuts | Configurable per action, in Preferences → Shortcuts. Each needs a modifier key |
-| Launch at login | `SMAppService` (macOS 13+). macOS may ask you to approve it in Login Items |
+| Menu bar icon states | A distinct glyph and colour per mode, so status reads at a glance |
+| Global shortcuts | Configurable per action in Preferences → Shortcuts; each needs a modifier |
+| Launch at login | `SMAppService`; macOS may ask you to approve it in Login Items |
 | Notifications | On mode start, end, and auto-expiry. Toggleable |
-| Presentation Mode | Keep Awake with the display forced on — see the caveat below |
+| Presentation Mode | Keep Awake with the display forced on |
 | Local usage log | Off by default. Per-day counts only, kept 30 days, never leaves the Mac |
-| Software updates | Checks GitHub Releases and installs in place. Automatic checks off by default |
+| Software updates | Checks GitHub Releases and can install in place. Automatic checks off by default |
 
 ---
 
 ## Updates
 
-Preferences › Updates checks GitHub Releases for a newer build and can install
-it in place: Vigil downloads the release zip, verifies the bundle identifier
-matches before overwriting anything, then hands off to a small detached script
-that waits for the app to quit, swaps the bundle, and relaunches.
+Preferences → Updates checks GitHub Releases for a newer build and can install it in place: Vigil downloads the release zip, verifies the bundle identifier matches before overwriting anything, then hands off to a small detached script that waits for the app to quit, swaps the bundle, and relaunches.
 
-> **The updater is dormant while this repository is private.** It calls the
-> GitHub Releases API without credentials, and GitHub answers 404 for private
-> repositories — so Vigil reports that it found no releases no matter how many
-> are published. Releases still build and publish normally; install them by
-> hand. Making the repository public is what switches the updater on, and
-> embedding a token in the app is not an alternative: anyone could extract it.
-
-- **Automatic checks are off by default.** This is the only network access Vigil
-  has. Turned on, it checks at launch and once a day.
-- **Only GitHub hosts are accepted.** A download URL on any other host is
-  refused rather than followed, so a tampered response cannot redirect the
-  installer.
-- **The bundle identifier is verified** before the swap, so a wrong or
-  substituted asset cannot be installed over Vigil.
+- **Automatic checks are off by default.** This is Vigil's only network access. Enabled, it checks at launch and once a day.
+- **Only GitHub hosts are accepted.** A download URL on any other host is refused rather than followed, so a tampered response cannot redirect the installer.
+- **The bundle identifier is verified** before the swap, so a wrong or substituted asset cannot be installed over Vigil.
 
 Two things to know:
 
-- **Installing an update changes the code signature**, which means macOS will
-  drop the Accessibility grant and you will have to allow Vigil again. That is
-  unavoidable for an unsigned build — see the signing section above.
-- **Updating from a build running out of Xcode's DerivedData** replaces a build
-  product your next ⌘R overwrites anyway. Vigil detects this and says so.
-  Export to `/Applications` for in-place updates to be useful.
-
-## Releasing
-
-Three GitHub Actions workflows in `.github/workflows`:
-
-| Workflow | Trigger | Does |
-|---|---|---|
-| `ci.yaml` | push to `main`, any PR | Runs the test suites, builds Debug unsigned, uploads a zipped app artifact |
-| `release.yaml` | push to `main`, or manual | Reads `MARKETING_VERSION`; if no matching tag exists, runs tests, builds Release, tags `vX.Y.Z`, and publishes a GitHub Release with the zipped app |
-
-So a release is just: bump `MARKETING_VERSION` and merge to `main`. If the tag
-already exists the workflow exits early, so ordinary pushes cost one cheap
-version check.
-
-**No repository secrets are required.** Tagging and releasing deliberately live
-in one workflow: split across two, the tag would have to be pushed with a
-personal access token, because a tag pushed using the default `GITHUB_TOKEN`
-does not trigger other workflows. Keeping them together means the built-in
-token is enough and no long-lived credential is stored in the repo.
-
-The tag is created *after* the build succeeds, so a failed build never leaves
-a tag behind that blocks the next attempt.
-
-**Released builds are unsigned and un-notarized.** They are fine for your own
-machine; anyone else downloading one will have to right-click › Open past
-Gatekeeper.
-
-## Honest limitations
-
-- **Presentation Mode cannot toggle Do Not Disturb directly.** macOS has no public API for Focus modes. Instead, make a Shortcut in the Shortcuts app that sets a Focus, and put its name in Preferences → General. Leave it blank and Presentation Mode is simply Keep Awake with the display held on.
-
-- **Pinch and magnify gestures are not blocked in Cleaning Mode.** Quartz reuses event type numbers 29 and 30 for `tapDisabledByTimeout` / `tapDisabledByUserInput`, the same values AppKit uses for gesture and magnify. Subscribing to them would make a real tap-disable indistinguishable from a pinch, which would break the recovery path that keeps the feature safe. Rotate, gesture begin/end, smart-magnify and pressure events *are* blocked, along with every click, keystroke, scroll and drag — and a pinch on its own cannot activate anything.
-
-- **Free provisioning profiles expire after 7 days.** An exported `.app` sitting in `/Applications` will stop launching after a week. Running it from Xcode refreshes it, so ⌘R every so often avoids the issue entirely. This is a limitation of free personal-team signing, not of the app.
-
-- **Not notarized and not sandboxed.** The App Sandbox is off for this target because `CGEventTap` cannot intercept global input inside it. This is scoped to this app only and affects nothing else on the machine. It is also why this build is for your own machine rather than distribution.
-
-- **Closing the lid still sleeps the Mac.** No power assertion can prevent
-  clamshell sleep, so Lock & Keep Awake keeps the machine up only with the lid
-  open.
-
-- **Notification authorization can fail** for an app signed with a personal team. It is logged and ignored; every other feature still works.
+- **Installing an update changes the code signature**, so macOS drops the Accessibility grant and you will have to allow Vigil again. Unavoidable for unsigned builds — see [Accessibility and code signing](#accessibility-and-code-signing).
+- **Update checks only work against a public repository.** The API call is unauthenticated, and GitHub answers 404 for private repos, so the app would report no releases regardless of how many exist. Embedding a token is not an alternative — anyone could extract it from the app.
+- **Updating a build running from Xcode's DerivedData** replaces a build product your next ⌘R overwrites anyway. Vigil detects this and says so.
 
 ---
 
-## Test checklist
+## Limitations
 
-Automated verification already done: the project builds clean with no warnings, launches without crashing, reports `LSUIElement` true, ships with `com.apple.security.app-sandbox = false`, leaves no power assertions behind after quitting (`pmset -g assertions`), and restores an indefinite session as indefinite on AC but capped on battery.
+- **Closing the lid still sleeps the Mac.** No power assertion can prevent clamshell sleep, so Lock & Keep Awake keeps the machine up only with the lid open.
 
-To exercise on-battery behaviour without unplugging, **Debug builds only**:
+- **Presentation Mode cannot toggle Do Not Disturb directly.** macOS exposes no public API for Focus modes. Make a Shortcut that sets a Focus and put its name in Preferences → General; leave it blank and Presentation Mode is simply Keep Awake with the display held on.
+
+- **Pinch and magnify gestures are not blocked in Cleaning Mode.** Quartz reuses event type numbers 29 and 30 for `tapDisabledByTimeout` / `tapDisabledByUserInput` — the same values AppKit uses for gesture and magnify — so subscribing to them would make a genuine tap-disable indistinguishable from a pinch and break the recovery path that keeps the feature safe. Rotate, gesture begin/end, smart-magnify and pressure events *are* blocked, along with every click, keystroke, scroll and drag. A pinch alone activates nothing.
+
+- **The App Sandbox is off**, because `CGEventTap` cannot intercept global input inside it. This is scoped to this target and affects nothing else on the machine.
+
+- **Free personal-team provisioning profiles expire after 7 days.** An exported `.app` left in `/Applications` stops launching after a week; rebuilding from Xcode refreshes it.
+
+- **Notification authorization can fail** for an app signed with a personal team. It is logged and ignored; everything else still works.
+
+---
+
+## Development
+
+### Build
 
 ```sh
-defaults write zw.co.munyaradzichigangawa.Vigil debugForceBatteryPower -bool true
-# ...and to undo
-defaults delete zw.co.munyaradzichigangawa.Vigil debugForceBatteryPower
+xcodebuild -project Vigil.xcodeproj -scheme Vigil -configuration Debug \
+  -destination 'platform=macOS' build
 ```
 
-This flag is inside `#if DEBUG` and is never compiled into a Release build.
-
-The rest needs a human at the keyboard:
-
-- [ ] Keep Awake prevents sleep for the chosen duration and releases cleanly afterward
-- [ ] "Keep display on" off → screen sleeps, Mac stays awake
-- [ ] On battery, the no-limit duration chips are disabled with the plug-in hint
-- [ ] Unplugging during a no-limit session caps it at 1 hour and notifies
-- [ ] Cleaning Mode blocks all keyboard and trackpad input except the hold-to-exit gesture
-- [ ] Cleaning Mode exits on its own with no user action at all
-- [ ] Revoking Accessibility permission mid-Cleaning-Mode restores input and warns
-- [ ] Lock & Keep Awake locks the screen without disturbing a running Keep Awake timer
-- [ ] `pmset -g assertions | grep -i vigil` is empty after quitting
-- [ ] No Dock icon, absent from ⌘-Tab
-- [ ] Overlay covers every display and follows you across Spaces
-- [ ] Works on both Apple Silicon and Intel
-
-### Automated tests
+### Tests
 
 ```sh
 ./Tests/run-tests.sh
 ```
 
-25 assertions covering Cleaning Mode's input policy — what gets blocked, that
-the cursor can still reach the exit, that the hold gesture works, that wiping
-across the button cannot trigger it, that tap-disable notices are never
-swallowed, and the multi-display and not-yet-laid-out cases.
+48 assertions across two suites:
 
-These matter because they are the rules that decide whether you can get *out* of
-Cleaning Mode, and they normally only execute inside a live `CGEventTap` that
-needs Accessibility permission. `CleaningTapBridge.decide()` is split out from
-the tap callback specifically so they can be checked directly.
+- **Cleaning Mode input policy** — what is blocked, that the cursor can still reach the exit, that the hold gesture works, that wiping across the button cannot trigger it, that tap-disable notices are never swallowed, plus multi-display and not-yet-laid-out cases.
+- **Update handling** — tag normalisation, numeric version ordering (so `1.10.0` correctly beats `1.9.0`), and the download host allowlist.
 
-There is also a full-stack check — real manager, real event tap, real overlay,
-synthetic tap on the real hot zone:
+The input-policy tests matter because they decide whether a user can get *out* of Cleaning Mode, and that logic normally only runs inside a live `CGEventTap` needing Accessibility permission. `CleaningTapBridge.decide()` is split out of the tap callback specifically so it can be tested directly.
+
+There is also a full-stack check — real manager, real event tap, real overlay, synthetic click on the real hot zone:
 
 ```sh
-./Tests/run-e2e.sh      # blocks input for ~3s; asks first
+./Tests/run-e2e.sh      # blocks input for ~3s; asks for confirmation first
 ```
 
 It needs Accessibility permission for the **terminal**, not for Vigil.
 
-#### A note on the exit gesture
+### Manual test checklist
 
-It is "click here, then hold still", not "press and hold". With **tap to click**
-enabled — the default on Mac laptops — a tap is reported as a mouse-down and a
-mouse-up about 60ms apart. Cancelling the hold on release therefore made the
-gesture impossible for anyone who taps instead of physically depressing the
-trackpad. Only *leaving* the button cancels now: the gesture needs a click
-inside the button and the pointer to stay there for the full duration. A wiping
-hand drags the cursor away almost at once, which is what keeps it hard to
-trigger by accident.
+Some behaviour needs a human at the keyboard:
+
+- [ ] Keep Awake prevents sleep for the chosen duration and releases cleanly afterwards
+- [ ] *Keep display on* off → screen sleeps, Mac stays awake
+- [ ] On battery, no-limit durations are disabled with the plug-in hint
+- [ ] Unplugging during a no-limit session caps it at 1 hour and notifies
+- [ ] Cleaning Mode blocks all input except the exit gesture
+- [ ] Cleaning Mode exits on its own with no user action at all
+- [ ] Revoking Accessibility mid-Cleaning-Mode restores input and warns
+- [ ] Lock & Keep Awake locks without disturbing a running Keep Awake timer
+- [ ] `pmset -g assertions | grep -i vigil` is empty after quitting
+- [ ] No Dock icon, absent from ⌘-Tab
+- [ ] Overlay covers every display and follows across Spaces
+
+To exercise on-battery behaviour without unplugging (**Debug builds only** — the flag is inside `#if DEBUG`):
+
+```sh
+defaults write zw.co.munyaradzichigangawa.Vigil debugForceBatteryPower -bool true
+defaults delete zw.co.munyaradzichigangawa.Vigil debugForceBatteryPower
+```
 
 Useful while testing:
 
 ```sh
-# Watch Vigil's own logs
 log stream --predicate 'subsystem == "zw.co.munyaradzichigangawa.Vigil"' --style compact
-
-# Confirm assertions appear and disappear
 pmset -g assertions | grep -i vigil
 ```
 
----
-
-## Layout
+### Layout
 
 ```
 Vigil/
-├── VigilApp.swift              MenuBarExtra shell, app delegate, icon state
+├── VigilApp.swift                     MenuBarExtra shell, app delegate, icon state
 ├── Core/
-│   ├── AppCoordinator.swift    Wires managers together; owns all actions
-│   ├── KeepAwakeManager.swift  IOKit assertions, reference-counted by reason
-│   ├── CleaningModeManager.swift  CGEventTap lifecycle and the three exits
-│   ├── CleaningTapBridge.swift    Plain state shared with the C tap callback
-│   ├── ScreenLocker.swift      Synthetic ⌃⌘Q with CGSession fallback
-│   ├── AccessibilityPermission.swift
-│   ├── HotKeyManager.swift     Carbon RegisterEventHotKey
-│   ├── BatteryMonitor.swift    IOKit power-source notifications (no polling)
-│   ├── LaunchAtLogin.swift     SMAppService
+│   ├── AppCoordinator.swift           Wires managers together; owns all actions
+│   ├── KeepAwakeManager.swift         IOKit assertions, reference-counted by reason
+│   ├── CleaningModeManager.swift      CGEventTap lifecycle and the three exits
+│   ├── CleaningTapBridge.swift        Input policy, split out to be testable
+│   ├── ScreenLocker.swift             Synthetic ⌃⌘Q with CGSession fallback
+│   ├── AccessibilityPermission.swift  Grant watching and ad-hoc-build detection
+│   ├── HotKeyManager.swift            Carbon RegisterEventHotKey
+│   ├── BatteryMonitor.swift           IOKit power-source notifications, no polling
+│   ├── ReleaseUpdateService.swift     GitHub Releases lookup and version compare
+│   ├── UpdateManager.swift            Download, verify, in-place swap
+│   ├── LaunchAtLogin.swift            SMAppService
 │   ├── NotificationManager.swift
 │   ├── UsageLog.swift
 │   └── Preferences.swift
 └── UI/
-    ├── DesignSystem.swift          Tokens + shared components (Vg.*)
-    ├── MenuContentView.swift       The menu bar panel
-    ├── CleaningOverlayView.swift   Full-screen overlay content
+    ├── DesignSystem.swift             Tokens and shared components (Vg.*)
+    ├── MenuContentView.swift          The menu bar panel
+    ├── CleaningOverlayView.swift      Full-screen overlay content
     ├── CleaningOverlayController.swift  One NSPanel per display
-    ├── PreferencesView.swift       Sidebar + detail settings
+    ├── PreferencesView.swift          Sidebar and detail settings
     ├── OnboardingView.swift
     ├── HotKeyRecorderView.swift
     └── AuxiliaryWindow.swift
 ```
 
----
+### Design
 
-## Design
+All UI shares one token set in `Vigil/UI/DesignSystem.swift` — spacing, radii, type ramp, state palette — plus components (`VgCard`, `VgActionRow`, `VgChip`, `VgProgressBar`, `VgStatusPill`, `VgNotice`). Change a token there and every surface follows.
 
-All UI shares one token set in `Vigil/UI/DesignSystem.swift` — spacing, radii, type
-ramp, and a state palette — plus a handful of components (`VgCard`, `VgActionRow`,
-`VgChip`, `VgProgressBar`, `VgStatusPill`, `VgNotice`). Change a token there and
-every surface follows.
-
-**Each mode owns a colour**, so the menu bar glyph alone tells you what Vigil is
-doing without opening anything:
+Each mode owns a colour, so the menu bar glyph alone says what Vigil is doing:
 
 | State | Colour | Glyph |
 |---|---|---|
@@ -344,6 +271,33 @@ doing without opening anything:
 | Cleaning Mode | cyan | `hand.raised` |
 | Lock actions | indigo | `lock.display` |
 
-Countdowns use monospaced digits so the layout never jitters as they tick, and
-rows carry real hover states — `buttonStyle(.plain)` gives none on macOS, which
-makes a custom panel feel dead.
+Countdowns use monospaced digits so layouts don't jitter as they tick, and rows carry real hover states — `buttonStyle(.plain)` provides none on macOS, which makes a custom panel feel dead.
+
+---
+
+## Releasing
+
+Two GitHub Actions workflows in `.github/workflows`:
+
+| Workflow | Trigger | Does |
+|---|---|---|
+| `ci.yaml` | push to `main`, any PR | Runs both test suites, builds Debug unsigned, uploads a zipped app artifact |
+| `release.yaml` | push to `main`, or manual | Reads `MARKETING_VERSION`; if no matching tag exists, runs tests, builds Release, tags `vX.Y.Z`, and publishes a GitHub Release with the zipped app |
+
+A release is therefore just: bump `MARKETING_VERSION`, merge to `main`. If the tag already exists the workflow exits early, so ordinary pushes cost one cheap version check.
+
+**No repository secrets are required.** Tagging and releasing deliberately live in one workflow: split across two, the tag would need a personal access token, because a tag pushed with the default `GITHUB_TOKEN` does not trigger other workflows. Keeping them together means the built-in token suffices and no long-lived credential is stored in the repo.
+
+The tag is created *after* the build succeeds, so a failed build never leaves a tag behind that blocks the next attempt.
+
+---
+
+## Contributing
+
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Anything touching Cleaning Mode deserves extra care — it can take a user's keyboard and trackpad away, so every change must preserve all three independent exits.
+
+## License
+
+[MIT](LICENSE).

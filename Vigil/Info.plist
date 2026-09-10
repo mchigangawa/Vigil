@@ -24,7 +24,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Munyaradzi Chigangawa</string>
+	<string>Copyright © 2026 Munyaradzi Chigangawa. MIT licensed.</string>
 	<!-- Vigil makes no network requests of any kind. -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
