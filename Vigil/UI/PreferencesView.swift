@@ -505,10 +505,12 @@ private struct UpdatesPane: View {
                     statusIcon
                     VStack(alignment: .leading, spacing: 2) {
                         Text(statusTitle).font(Vg.Typo.rowTitle)
-                        Text(statusDetail)
-                            .font(Vg.Typo.caption)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
+                        if !statusDetail.isEmpty {
+                            Text(statusDetail)
+                                .font(Vg.Typo.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                     Spacer(minLength: Vg.Space.s)
 
@@ -596,9 +598,7 @@ private struct UpdatesPane: View {
 
     private var statusDetail: String {
         if updates.isInstalling { return "Vigil will quit and reopen when this finishes." }
-        guard let result = updates.result else {
-            return "Vigil hasn't contacted GitHub yet."
-        }
+        guard let result = updates.result else { return "" }
         return result.hasUpdate
             ? "You're running \(result.currentVersion)."
             : "\(result.currentVersion) is the newest release."
