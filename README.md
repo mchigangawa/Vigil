@@ -151,6 +151,13 @@ it in place: Vigil downloads the release zip, verifies the bundle identifier
 matches before overwriting anything, then hands off to a small detached script
 that waits for the app to quit, swaps the bundle, and relaunches.
 
+> **The updater is dormant while this repository is private.** It calls the
+> GitHub Releases API without credentials, and GitHub answers 404 for private
+> repositories — so Vigil reports that it found no releases no matter how many
+> are published. Releases still build and publish normally; install them by
+> hand. Making the repository public is what switches the updater on, and
+> embedding a token in the app is not an alternative: anyone could extract it.
+
 - **Automatic checks are off by default.** This is the only network access Vigil
   has. Turned on, it checks at launch and once a day.
 - **Only GitHub hosts are accepted.** A download URL on any other host is
@@ -175,16 +182,20 @@ Three GitHub Actions workflows in `.github/workflows`:
 | Workflow | Trigger | Does |
 |---|---|---|
 | `ci.yaml` | push to `main`, any PR | Runs the test suites, builds Debug unsigned, uploads a zipped app artifact |
-| `auto-tag.yaml` | push to `main` | Reads `MARKETING_VERSION` from the project and pushes a matching `vX.Y.Z` tag if it doesn't exist |
-| `release.yaml` | a `vX.Y.Z` tag | Runs tests, builds Release, zips the app, creates a GitHub Release with the zip attached |
+| `release.yaml` | push to `main`, or manual | Reads `MARKETING_VERSION`; if no matching tag exists, runs tests, builds Release, tags `vX.Y.Z`, and publishes a GitHub Release with the zipped app |
 
-So a release is: bump `MARKETING_VERSION`, merge to `main`, and the tag, build,
-and release happen on their own — and the in-app updater picks it up.
+So a release is just: bump `MARKETING_VERSION` and merge to `main`. If the tag
+already exists the workflow exits early, so ordinary pushes cost one cheap
+version check.
 
-**One-time setup:** `auto-tag.yaml` needs a `RELEASE_TOKEN` repository secret
-(a PAT with `repo` scope). Tags pushed with the default `GITHUB_TOKEN` do not
-trigger other workflows, so without it the tag lands but `release.yaml` never
-fires.
+**No repository secrets are required.** Tagging and releasing deliberately live
+in one workflow: split across two, the tag would have to be pushed with a
+personal access token, because a tag pushed using the default `GITHUB_TOKEN`
+does not trigger other workflows. Keeping them together means the built-in
+token is enough and no long-lived credential is stored in the repo.
+
+The tag is created *after* the build succeeds, so a failed build never leaves
+a tag behind that blocks the next attempt.
 
 **Released builds are unsigned and un-notarized.** They are fine for your own
 machine; anyone else downloading one will have to right-click › Open past

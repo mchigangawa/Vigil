@@ -134,7 +134,10 @@ enum UpdateError: LocalizedError, Equatable {
         case .invalidResponse:
             return "Couldn't check for updates right now. Try again shortly."
         case .noReleases:
-            return "No releases have been published yet."
+            // GitHub answers 404 both for "no releases" and for a private
+            // repository read without credentials, and the app cannot tell
+            // them apart — so the message must cover both.
+            return "No releases found. If Vigil's repository is private, update checks can't see its releases."
         case .rateLimited:
             return "GitHub is rate-limiting update checks. Try again in a few minutes."
         case .noDownloadableAsset:
