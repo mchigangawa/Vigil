@@ -6,7 +6,7 @@ import AppKit
 struct PreferencesView: View {
 
     private enum Pane: String, CaseIterable, Identifiable {
-        case general, cleaning, shortcuts, privacy
+        case general, cleaning, shortcuts, updates, privacy
 
         var id: String { rawValue }
 
@@ -15,6 +15,7 @@ struct PreferencesView: View {
             case .general: return "General"
             case .cleaning: return "Cleaning"
             case .shortcuts: return "Shortcuts"
+            case .updates: return "Updates"
             case .privacy: return "Privacy"
             }
         }
@@ -24,6 +25,7 @@ struct PreferencesView: View {
             case .general: return "gearshape.fill"
             case .cleaning: return "hand.raised.fill"
             case .shortcuts: return "keyboard.fill"
+            case .updates: return "arrow.down.circle.fill"
             case .privacy: return "hand.raised.square.fill"
             }
         }
@@ -33,6 +35,7 @@ struct PreferencesView: View {
             case .general: return Vg.Tint.awake
             case .cleaning: return Vg.Tint.cleaning
             case .shortcuts: return Vg.Tint.lock
+            case .updates: return Vg.Tint.cleaning
             case .privacy: return .secondary
             }
         }
@@ -77,6 +80,7 @@ struct PreferencesView: View {
                 case .general: GeneralPane()
                 case .cleaning: CleaningPane()
                 case .shortcuts: ShortcutsPane()
+                case .updates: UpdatesPane()
                 case .privacy: PrivacyPane()
                 }
             }
@@ -209,6 +213,23 @@ private struct GeneralPane: View {
                     .toggleStyle(.switch)
                     .controlSize(.small)
                     .tint(Vg.Tint.awake)
+                }
+            }
+
+            SettingsGroup(
+                title: "Lock & Keep Awake",
+                footnote: "Locking uses the same duration as Keep Awake above, so a short default means your Mac sleeps when it runs out. Note that closing the lid still sleeps the Mac — no power assertion can prevent that."
+            ) {
+                SettingRow(title: "Keep the display on while locked",
+                           detail: "A dark screen gives you no way to tell whether the Mac is awake or asleep.") {
+                    Toggle("", isOn: Binding(
+                        get: { coordinator.preferences.lockKeepsDisplayOn },
+                        set: { coordinator.preferences.lockKeepsDisplayOn = $0 }
+                    ))
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .tint(Vg.Tint.lock)
                 }
             }
 
@@ -449,13 +470,173 @@ private struct PrivacyPane: View {
                         .font(.system(size: 20))
                         .foregroundStyle(.secondary)
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("Nothing leaves this Mac").font(Vg.Typo.rowTitle)
-                        Text("Vigil makes no network connections, has no accounts, and collects no analytics. The usage log is stored in your own user preferences and is off unless you turn it on.")
+                        Text("What leaves this Mac").font(Vg.Typo.rowTitle)
+                        Text("One thing, and only if you ask for it: update checks contact api.github.com to read Vigil's latest release. Nothing else. No accounts, no analytics, no telemetry. The usage log stays in your own user preferences and is off unless you turn it on.")
                             .font(Vg.Typo.caption)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
+            }
+        }
+    }
+}
+
+
+// MARK: - Updates
+
+private struct UpdatesPane: View {
+    @EnvironmentObject private var coordinator: AppCoordinator
+
+    private var updates: UpdateManager { coordinator.updates }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Vg.Space.xl) {
+            SettingsGroup(title: "This copy") {
+                SettingRow(title: "Version") {
+                    Text(updates.currentVersion)
+                        .font(Vg.Typo.timer)
+                        .foregroundStyle(.secondary)
+                }
+
+                Divider().opacity(0.5)
+
+                HStack(spacing: Vg.Space.m) {
+                    statusIcon
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(statusTitle).font(Vg.Typo.rowTitle)
+                        Text(statusDetail)
+                            .font(Vg.Typo.caption)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: Vg.Space.s)
+
+                    if updates.isChecking || updates.isInstalling {
+                        ProgressView().controlSize(.small)
+                    } else {
+                        Button("Check Now") {
+                            Task { await coordinator.checkForUpdates() }
+                        }
+                        .controlSize(.small)
+                    }
+                }
+
+                if let result = updates.result, result.hasUpdate {
+                    Divider().opacity(0.5)
+                    updateAvailable(result)
+                }
+
+                if let error = updates.errorMessage {
+                    Divider().opacity(0.5)
+                    Label(error, systemImage: "exclamationmark.triangle.fill")
+                        .font(Vg.Typo.caption)
+                        .foregroundStyle(Vg.Tint.warning)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            SettingsGroup(
+                title: "Automatic checks",
+                footnote: "Checks GitHub for a new release at launch and once a day. This is the only time Vigil uses the network, which is why it is off unless you turn it on."
+            ) {
+                SettingRow(title: "Check for updates automatically") {
+                    Toggle("", isOn: Binding(
+                        get: { coordinator.preferences.automaticUpdateChecks },
+                        set: { coordinator.preferences.automaticUpdateChecks = $0 }
+                    ))
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .tint(Vg.Tint.cleaning)
+                }
+
+                if let last = coordinator.preferences.lastUpdateCheck {
+                    Divider().opacity(0.5)
+                    SettingRow(title: "Last checked") {
+                        Text(last.formatted(date: .abbreviated, time: .shortened))
+                            .font(Vg.Typo.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+            if updates.isRunningFromDerivedData {
+                VgNotice(icon: "hammer.fill",
+                         title: "Running a build from Xcode",
+                         message: "Installing an update would overwrite this build product, and your next \u{2318}R would replace it again. Export the app to /Applications to use in-place updates.",
+                         tint: Vg.Tint.warning)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var statusIcon: some View {
+        if updates.isInstalling {
+            Image(systemName: "arrow.down.circle.fill")
+                .font(.system(size: 18)).foregroundStyle(Vg.Tint.cleaning)
+        } else if let result = updates.result, result.hasUpdate {
+            Image(systemName: "arrow.up.circle.fill")
+                .font(.system(size: 18)).foregroundStyle(Vg.Tint.cleaning)
+        } else if updates.result != nil {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.system(size: 18)).foregroundStyle(.green)
+        } else {
+            Image(systemName: "questionmark.circle")
+                .font(.system(size: 18)).foregroundStyle(.secondary)
+        }
+    }
+
+    private var statusTitle: String {
+        if let stage = updates.stage { return stage }
+        if updates.isChecking { return "Checking\u{2026}" }
+        guard let result = updates.result else { return "Not checked yet" }
+        return result.hasUpdate ? "Vigil \(result.latestVersion) is available" : "You're up to date"
+    }
+
+    private var statusDetail: String {
+        if updates.isInstalling { return "Vigil will quit and reopen when this finishes." }
+        guard let result = updates.result else {
+            return "Vigil hasn't contacted GitHub yet."
+        }
+        return result.hasUpdate
+            ? "You're running \(result.currentVersion)."
+            : "\(result.currentVersion) is the newest release."
+    }
+
+    private func updateAvailable(_ result: UpdateCheckResult) -> some View {
+        VStack(alignment: .leading, spacing: Vg.Space.s) {
+            if let notes = result.releaseNotes, !notes.isEmpty {
+                ScrollView {
+                    Text(notes)
+                        .font(Vg.Typo.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
+                }
+                .frame(maxHeight: 120)
+            }
+
+            HStack(spacing: Vg.Space.s) {
+                Button("Install and Relaunch") {
+                    Task { await updates.install() }
+                }
+                .controlSize(.small)
+                .disabled(!updates.canInstall)
+
+                Button("Release Notes\u{2026}") {
+                    NSWorkspace.shared.open(result.releaseNotesURL)
+                }
+                .controlSize(.small)
+
+                Spacer()
+            }
+
+            if result.downloadURL == nil {
+                Text("That release has no downloadable build attached, so it can't be installed automatically.")
+                    .font(Vg.Typo.caption)
+                    .foregroundStyle(Vg.Tint.warning)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }

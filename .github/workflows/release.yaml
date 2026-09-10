@@ -1,0 +1,50 @@
+name: Release (macOS)
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cleaning Mode policy tests
+        run: ./Tests/run-tests.sh
+
+      - name: Build (Release, no signing)
+        run: |
+          xcodebuild \
+            -project Vigil.xcodeproj \
+            -scheme Vigil \
+            -configuration Release \
+            -destination "platform=macOS" \
+            -derivedDataPath build \
+            clean build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Package .app
+        run: |
+          APP_PATH="build/Build/Products/Release/Vigil.app"
+          ZIP_NAME="Vigil-${GITHUB_REF_NAME}.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_NAME"
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+          ls -la "$ZIP_NAME"
+
+      - name: Create GitHub Release and upload asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "Vigil $GITHUB_REF_NAME" \
+            --notes "See CHANGELOG.md for full details." \
+            --generate-notes \
+            "$ZIP_NAME"

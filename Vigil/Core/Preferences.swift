@@ -76,6 +76,9 @@ final class Preferences: ObservableObject {
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
         static let keepAwakeWasActive = "keepAwakeWasActive"
         static let presentationShortcutName = "presentationShortcutName"
+        static let lockKeepsDisplayOn = "lockKeepsDisplayOn"
+        static let automaticUpdateChecks = "automaticUpdateChecks"
+        static let lastUpdateCheck = "lastUpdateCheck"
         static let hotKeyKeepAwake = "hotKey.keepAwake"
         static let hotKeyCleaning = "hotKey.cleaning"
         static let hotKeyLock = "hotKey.lock"
@@ -96,6 +99,13 @@ final class Preferences: ObservableObject {
             Key.hasCompletedOnboarding: false,
             Key.keepAwakeWasActive: false,
             Key.presentationShortcutName: "",
+            // Default on: the whole point of Lock & Keep Awake is certainty
+            // that the Mac stays up, and a lit lock screen is the only visible
+            // proof of that.
+            Key.lockKeepsDisplayOn: true,
+            // Off by default: this is the only feature that reaches the
+            // network, so it stays something the user turns on.
+            Key.automaticUpdateChecks: false,
         ])
     }
 
@@ -174,6 +184,30 @@ final class Preferences: ObservableObject {
     var presentationShortcutName: String {
         get { defaults.string(forKey: Key.presentationShortcutName) ?? "" }
         set { objectWillChange.send(); defaults.set(newValue, forKey: Key.presentationShortcutName) }
+    }
+
+    /// Whether Lock & Keep Awake also holds the display on.
+    ///
+    /// A dark screen after locking gives no way to tell whether the Mac is
+    /// awake or asleep, which is exactly the doubt this feature exists to
+    /// remove — so it defaults to on.
+    var lockKeepsDisplayOn: Bool {
+        get { defaults.bool(forKey: Key.lockKeepsDisplayOn) }
+        set { objectWillChange.send(); defaults.set(newValue, forKey: Key.lockKeepsDisplayOn) }
+    }
+
+    // MARK: - Updates
+
+    /// When on, Vigil checks GitHub for a newer release at launch and daily.
+    /// Off by default — update checks are the only network access Vigil has.
+    var automaticUpdateChecks: Bool {
+        get { defaults.bool(forKey: Key.automaticUpdateChecks) }
+        set { objectWillChange.send(); defaults.set(newValue, forKey: Key.automaticUpdateChecks) }
+    }
+
+    var lastUpdateCheck: Date? {
+        get { defaults.object(forKey: Key.lastUpdateCheck) as? Date }
+        set { defaults.set(newValue, forKey: Key.lastUpdateCheck) }
     }
 
     // MARK: - Hot keys

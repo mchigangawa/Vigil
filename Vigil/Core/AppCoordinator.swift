@@ -54,6 +54,7 @@ final class AppCoordinator: ObservableObject {
     let battery = BatteryMonitor()
     let usageLog = UsageLog()
     let cleaning: CleaningModeManager
+    let updates = UpdateManager()
 
     /// Transient message surfaced at the top of the menu.
     @Published var banner: String?
@@ -83,7 +84,7 @@ final class AppCoordinator: ObservableObject {
 
     private func wireUp() {
         // Republish child changes so the menu redraws.
-        for child: any ObservableObject in [keepAwake, cleaning, permission, battery, usageLog] {
+        for child: any ObservableObject in [keepAwake, cleaning, permission, battery, usageLog, updates] {
             (child.objectWillChange as? ObservableObjectPublisher)?
                 .sink { [weak self] _ in self?.objectWillChange.send() }
                 .store(in: &cancellables)
@@ -140,6 +141,7 @@ final class AppCoordinator: ObservableObject {
         startClock()
         observeSystemSleep()
         restoreKeepAwakeIfNeeded()
+        scheduleAutomaticUpdateCheck()
     }
 
     private func startClock() {
@@ -208,6 +210,52 @@ final class AppCoordinator: ObservableObject {
         keepAwake.startUserSession(duration: restored,
                                    keepDisplayOn: preferences.keepDisplayOn)
         Self.log.info("Restored Keep Awake session from previous launch as \(restored.rawValue, privacy: .public)")
+    }
+
+    // MARK: - Updates
+
+    /// Checks at launch and then daily, but only if the user opted in.
+    private func scheduleAutomaticUpdateCheck() {
+        guard preferences.automaticUpdateChecks else { return }
+
+        // Don't re-check on every relaunch of a frequently-restarted app.
+        let oneDay: TimeInterval = 24 * 60 * 60
+        if let last = preferences.lastUpdateCheck, last > Date().addingTimeInterval(-oneDay) {
+            scheduleNextAutomaticCheck(after: last.addingTimeInterval(oneDay).timeIntervalSinceNow)
+            return
+        }
+        runAutomaticCheck()
+    }
+
+    private func runAutomaticCheck() {
+        Task { @MainActor in
+            await updates.check(userInitiated: false)
+            announceUpdateIfFound()
+            scheduleNextAutomaticCheck(after: 24 * 60 * 60)
+        }
+    }
+
+    private func scheduleNextAutomaticCheck(after interval: TimeInterval) {
+        let delay = max(60, interval)
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            guard preferences.automaticUpdateChecks else { return }
+            runAutomaticCheck()
+        }
+    }
+
+    private func announceUpdateIfFound() {
+        guard let result = updates.result, result.hasUpdate else { return }
+        notify("Vigil \(result.latestVersion) is available",
+               "You're on \(result.currentVersion). Open Preferences › Updates to install it.")
+    }
+
+    /// Manual check, from the menu or preferences.
+    func checkForUpdates() async {
+        await updates.check(userInitiated: true)
+        if let result = updates.result, !result.hasUpdate {
+            show(banner: "You're up to date (\(result.currentVersion)).")
+        }
     }
 
     // MARK: - Actions
@@ -316,8 +364,9 @@ final class AppCoordinator: ObservableObject {
         }
 
         // Never disturb a Keep Awake timer that is already running.
-        keepAwake.ensureActiveForLock(defaultDuration: effectiveDuration(for: preferences.keepAwakeDuration),
-                                      keepDisplayOn: false)
+        let lockDuration = effectiveDuration(for: preferences.keepAwakeDuration)
+        keepAwake.ensureActiveForLock(defaultDuration: lockDuration,
+                                      keepDisplayOn: preferences.lockKeepsDisplayOn)
         usageLog.record(.lock)
 
         ScreenLocker.lock(hasAccessibility: true) { [weak self] result in
@@ -325,7 +374,7 @@ final class AppCoordinator: ObservableObject {
                 guard let self else { return }
                 switch result {
                 case .success:
-                    self.notify("Locked", "Your Mac is locked and staying awake.")
+                    self.notify("Locked", self.lockNotificationBody(lockDuration))
                 case .failure(.noAccessibility):
                     self.show(banner: "Locking needs Accessibility permission.")
                 case .failure(.allMethodsFailed):
@@ -398,6 +447,22 @@ final class AppCoordinator: ObservableObject {
             try? await Task.sleep(nanoseconds: 8_000_000_000)
             if self.banner == text { self.banner = nil }
         }
+    }
+
+    /// Says plainly how long the Mac will stay up, because "staying awake"
+    /// with no duration was the part that misled.
+    private func lockNotificationBody(_ duration: KeepAwakeDuration) -> String {
+        let screen = preferences.lockKeepsDisplayOn
+            ? "The screen stays lit so you can see it's awake."
+            : "The display may sleep."
+        // An already-running session keeps its own timer; don't claim otherwise.
+        if let remaining = keepAwake.remaining {
+            return "Staying awake for \(Int(remaining / 60)) more minutes. \(screen)"
+        }
+        if duration.isIndefinite {
+            return "Staying awake with no time limit. \(screen)"
+        }
+        return "Staying awake for \(duration.title.lowercased()). \(screen)"
     }
 
     private func keepAwakeNotificationBody(_ duration: KeepAwakeDuration) -> String {

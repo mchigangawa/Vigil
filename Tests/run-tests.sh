@@ -9,5 +9,11 @@ set -e
 cd "$(dirname "$0")/.."
 OUT=$(mktemp -d)
 trap 'rm -rf "$OUT"' EXIT
+echo "### Cleaning Mode input policy"
 swiftc -O Vigil/Core/CleaningTapBridge.swift Tests/TapPolicy/main.swift -o "$OUT/taptests"
 "$OUT/taptests"
+
+echo ""
+echo "### Update version handling"
+swiftc -O Vigil/Core/ReleaseUpdateService.swift Tests/UpdatePolicy/main.swift -o "$OUT/updatetests"
+"$OUT/updatetests"

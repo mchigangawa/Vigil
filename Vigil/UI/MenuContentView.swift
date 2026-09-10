@@ -221,7 +221,7 @@ struct MenuContentView: View {
 
                 VgActionRow(
                     title: "Lock & Keep Awake",
-                    subtitle: "Secure the screen, keep work running",
+                    subtitle: lockSubtitle,
                     systemImage: "lock.display",
                     tint: Vg.Tint.lock,
                     trailingText: shortcutText(.lockAndKeepAwake)
@@ -235,6 +235,21 @@ struct MenuContentView: View {
                 ) { coordinator.startPresentationMode() }
             }
         }
+    }
+
+    /// Names the duration up front. "Keeps work running" said nothing about
+    /// when the Mac would sleep, which is precisely what got missed.
+    private var lockSubtitle: String {
+        if let remaining = coordinator.keepAwake.remaining {
+            return "Locks now, awake \(remaining.vgClockString) more"
+        }
+        if coordinator.keepAwake.isUserSessionActive {
+            return "Locks now, awake with no limit"
+        }
+        let duration = coordinator.effectiveDuration(for: coordinator.preferences.keepAwakeDuration)
+        return duration.isIndefinite
+            ? "Locks now, stays awake with no limit"
+            : "Locks now, stays awake \(duration.title.lowercased())"
     }
 
     private func shortcutText(_ action: HotKeyAction) -> String? {

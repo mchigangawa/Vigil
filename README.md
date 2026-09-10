@@ -2,7 +2,7 @@
 
 A macOS menu bar utility with three toggles: **Keep Awake**, **Cleaning Mode**, and **Lock & Keep Awake**.
 
-No Dock icon, no network access, no accounts, no telemetry. Everything it stores stays in your own user preferences on this Mac.
+No Dock icon, no accounts, no telemetry. Everything it stores stays in your own user preferences on this Mac. The one thing that touches the network is the update check, and only when you ask for it — see [Updates](#updates).
 
 - **Bundle identifier:** `zw.co.munyaradzichigangawa.Vigil`
 - **Requires:** macOS 13 (Ventura) or later, Apple Silicon or Intel
@@ -140,8 +140,55 @@ Locking posts a synthetic ⌃⌘Q. If the screen is still unlocked 0.6s later, i
 | Notifications | On mode start, end, and auto-expiry. Toggleable |
 | Presentation Mode | Keep Awake with the display forced on — see the caveat below |
 | Local usage log | Off by default. Per-day counts only, kept 30 days, never leaves the Mac |
+| Software updates | Checks GitHub Releases and installs in place. Automatic checks off by default |
 
 ---
+
+## Updates
+
+Preferences › Updates checks GitHub Releases for a newer build and can install
+it in place: Vigil downloads the release zip, verifies the bundle identifier
+matches before overwriting anything, then hands off to a small detached script
+that waits for the app to quit, swaps the bundle, and relaunches.
+
+- **Automatic checks are off by default.** This is the only network access Vigil
+  has. Turned on, it checks at launch and once a day.
+- **Only GitHub hosts are accepted.** A download URL on any other host is
+  refused rather than followed, so a tampered response cannot redirect the
+  installer.
+- **The bundle identifier is verified** before the swap, so a wrong or
+  substituted asset cannot be installed over Vigil.
+
+Two things to know:
+
+- **Installing an update changes the code signature**, which means macOS will
+  drop the Accessibility grant and you will have to allow Vigil again. That is
+  unavoidable for an unsigned build — see the signing section above.
+- **Updating from a build running out of Xcode's DerivedData** replaces a build
+  product your next ⌘R overwrites anyway. Vigil detects this and says so.
+  Export to `/Applications` for in-place updates to be useful.
+
+## Releasing
+
+Three GitHub Actions workflows in `.github/workflows`:
+
+| Workflow | Trigger | Does |
+|---|---|---|
+| `ci.yaml` | push to `main`, any PR | Runs the test suites, builds Debug unsigned, uploads a zipped app artifact |
+| `auto-tag.yaml` | push to `main` | Reads `MARKETING_VERSION` from the project and pushes a matching `vX.Y.Z` tag if it doesn't exist |
+| `release.yaml` | a `vX.Y.Z` tag | Runs tests, builds Release, zips the app, creates a GitHub Release with the zip attached |
+
+So a release is: bump `MARKETING_VERSION`, merge to `main`, and the tag, build,
+and release happen on their own — and the in-app updater picks it up.
+
+**One-time setup:** `auto-tag.yaml` needs a `RELEASE_TOKEN` repository secret
+(a PAT with `repo` scope). Tags pushed with the default `GITHUB_TOKEN` do not
+trigger other workflows, so without it the tag lands but `release.yaml` never
+fires.
+
+**Released builds are unsigned and un-notarized.** They are fine for your own
+machine; anyone else downloading one will have to right-click › Open past
+Gatekeeper.
 
 ## Honest limitations
 
@@ -152,6 +199,10 @@ Locking posts a synthetic ⌃⌘Q. If the screen is still unlocked 0.6s later, i
 - **Free provisioning profiles expire after 7 days.** An exported `.app` sitting in `/Applications` will stop launching after a week. Running it from Xcode refreshes it, so ⌘R every so often avoids the issue entirely. This is a limitation of free personal-team signing, not of the app.
 
 - **Not notarized and not sandboxed.** The App Sandbox is off for this target because `CGEventTap` cannot intercept global input inside it. This is scoped to this app only and affects nothing else on the machine. It is also why this build is for your own machine rather than distribution.
+
+- **Closing the lid still sleeps the Mac.** No power assertion can prevent
+  clamshell sleep, so Lock & Keep Awake keeps the machine up only with the lid
+  open.
 
 - **Notification authorization can fail** for an app signed with a personal team. It is logged and ignored; every other feature still works.
 
