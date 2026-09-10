@@ -1,0 +1,361 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5ACD9D8B0BDE1818888F87FF /* AccessibilityPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CFFBB0381AAD03B90EBD18 /* AccessibilityPermission.swift */; };
+		232788D6C215CACC0FB2B0C6 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0871DD012615AE33317C3874 /* AppCoordinator.swift */; };
+		8333A877F148F456E67E803D /* BatteryMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46D5CAA2129FFDE478373390 /* BatteryMonitor.swift */; };
+		9F4816A39F53755618C90FB4 /* CleaningModeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D593D692911FFFF6E622C95E /* CleaningModeManager.swift */; };
+		6281F7BBA0CA65D14CB83BE0 /* CleaningTapBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E5A5C054A7216AD59E9224 /* CleaningTapBridge.swift */; };
+		4DBBFDF26BD6E1998DA3388C /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35BF6CB66047A43B90420847 /* HotKeyManager.swift */; };
+		88782A276B567F2B1D1305B6 /* KeepAwakeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2034C4802D4423BE79A74C9D /* KeepAwakeManager.swift */; };
+		E7A7ABC1D83B09B028B38C67 /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4809ACA376E19C56CA911F20 /* LaunchAtLogin.swift */; };
+		EBC4A9C38B0DAF02E50EDC76 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A273A2AE48DF516D8F931F0F /* NotificationManager.swift */; };
+		B4FADD112F10A7A8E9D25558 /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FBA0CE454A54AF2BB432192 /* Preferences.swift */; };
+		7346396EF2EB33B04C89F110 /* ScreenLocker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3908FE2BE174F80072B01C0E /* ScreenLocker.swift */; };
+		C08712F933642916C20EDDA3 /* UsageLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82FDB421ECF2F3A59A0049B3 /* UsageLog.swift */; };
+		09DE6676B7FD2DA40B5B83F0 /* AuxiliaryWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 191164BFF9044DE1920EB849 /* AuxiliaryWindow.swift */; };
+		D45B2E5DA96A2523D8962438 /* CleaningOverlayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA960D430EFC48A3E12A5926 /* CleaningOverlayController.swift */; };
+		323F20EECB1C0694C1646493 /* CleaningOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FFE8DF8F27423336756FAD6 /* CleaningOverlayView.swift */; };
+		4164721AC64695C1559C219B /* HotKeyRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34DAA0FFAA2A4F6337AF4D3 /* HotKeyRecorderView.swift */; };
+		C36DBB4CF932CB40FDBF186D /* MenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22429EF65DDBA58E7F3640C9 /* MenuContentView.swift */; };
+		1D90495C62207088A2562612 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28999919772E7E52A6FE9469 /* OnboardingView.swift */; };
+		28D3F3CC07E8D961A0AD4429 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188B241BA2B8267C3F4157C8 /* PreferencesView.swift */; };
+		A7BBA2655CCD689C78444929 /* VigilApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C4B07D6484D447A31259957 /* VigilApp.swift */; };
+		AA5F384B2A6D8C89D0131D92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18B9758092DEF14A5F93F96A /* Assets.xcassets */; };
+		E032839AC2515A58908D8437 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F800FE1069153D57005B6E32 /* DesignSystem.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		EAF7CD10285071D147CF5C29 /* Vigil.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vigil.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		52CFFBB0381AAD03B90EBD18 /* AccessibilityPermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityPermission.swift; sourceTree = "<group>"; };
+		0871DD012615AE33317C3874 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
+		46D5CAA2129FFDE478373390 /* BatteryMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryMonitor.swift; sourceTree = "<group>"; };
+		D593D692911FFFF6E622C95E /* CleaningModeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleaningModeManager.swift; sourceTree = "<group>"; };
+		16E5A5C054A7216AD59E9224 /* CleaningTapBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleaningTapBridge.swift; sourceTree = "<group>"; };
+		35BF6CB66047A43B90420847 /* HotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyManager.swift; sourceTree = "<group>"; };
+		2034C4802D4423BE79A74C9D /* KeepAwakeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeepAwakeManager.swift; sourceTree = "<group>"; };
+		4809ACA376E19C56CA911F20 /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
+		A273A2AE48DF516D8F931F0F /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		5FBA0CE454A54AF2BB432192 /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
+		3908FE2BE174F80072B01C0E /* ScreenLocker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenLocker.swift; sourceTree = "<group>"; };
+		82FDB421ECF2F3A59A0049B3 /* UsageLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageLog.swift; sourceTree = "<group>"; };
+		191164BFF9044DE1920EB849 /* AuxiliaryWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuxiliaryWindow.swift; sourceTree = "<group>"; };
+		EA960D430EFC48A3E12A5926 /* CleaningOverlayController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleaningOverlayController.swift; sourceTree = "<group>"; };
+		5FFE8DF8F27423336756FAD6 /* CleaningOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleaningOverlayView.swift; sourceTree = "<group>"; };
+		D34DAA0FFAA2A4F6337AF4D3 /* HotKeyRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyRecorderView.swift; sourceTree = "<group>"; };
+		22429EF65DDBA58E7F3640C9 /* MenuContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuContentView.swift; sourceTree = "<group>"; };
+		28999919772E7E52A6FE9469 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		188B241BA2B8267C3F4157C8 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
+		1C4B07D6484D447A31259957 /* VigilApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VigilApp.swift; sourceTree = "<group>"; };
+		18B9758092DEF14A5F93F96A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		74DA3F722E5ED1E50078E982 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B432F8AFFD4E4F5FED181945 /* Vigil.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Vigil.entitlements; sourceTree = "<group>"; };
+		F800FE1069153D57005B6E32 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		656065EE56D185BD6B24C8C6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A72BF9D88F7105D37DD5B348 = {
+			isa = PBXGroup;
+			children = (
+				1C0B813634650AD7884F36B2 /* Vigil */,
+				05919A351C34C164D2CD8A50 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		05919A351C34C164D2CD8A50 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EAF7CD10285071D147CF5C29 /* Vigil.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1C0B813634650AD7884F36B2 /* Vigil */ = {
+			isa = PBXGroup;
+			children = (
+				1C4B07D6484D447A31259957,
+				7F1D7FA1919EF9714D3B5E86 /* Core */,
+				F300D954378E2DBD68F1C42E /* UI */,
+				18B9758092DEF14A5F93F96A /* Assets.xcassets */,
+				74DA3F722E5ED1E50078E982 /* Info.plist */,
+				B432F8AFFD4E4F5FED181945 /* Vigil.entitlements */,
+			);
+			path = Vigil;
+			sourceTree = "<group>";
+		};
+		7F1D7FA1919EF9714D3B5E86 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				52CFFBB0381AAD03B90EBD18,
+				0871DD012615AE33317C3874,
+				46D5CAA2129FFDE478373390,
+				D593D692911FFFF6E622C95E,
+				16E5A5C054A7216AD59E9224,
+				35BF6CB66047A43B90420847,
+				2034C4802D4423BE79A74C9D,
+				4809ACA376E19C56CA911F20,
+				A273A2AE48DF516D8F931F0F,
+				5FBA0CE454A54AF2BB432192,
+				3908FE2BE174F80072B01C0E,
+				82FDB421ECF2F3A59A0049B3,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		F300D954378E2DBD68F1C42E /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				F800FE1069153D57005B6E32,
+				191164BFF9044DE1920EB849,
+				EA960D430EFC48A3E12A5926,
+				5FFE8DF8F27423336756FAD6,
+				D34DAA0FFAA2A4F6337AF4D3,
+				22429EF65DDBA58E7F3640C9,
+				28999919772E7E52A6FE9469,
+				188B241BA2B8267C3F4157C8,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		835105B234838BB116C0129A /* Vigil */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 098189B02C2BC08BFE6A4B49 /* Build configuration list for PBXNativeTarget "Vigil" */;
+			buildPhases = (
+				C77FB82F8846C8D5F201A77E /* Sources */,
+				656065EE56D185BD6B24C8C6 /* Frameworks */,
+				96D7A6EF30C98D8FA875C8C0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Vigil;
+			productName = Vigil;
+			productReference = EAF7CD10285071D147CF5C29 /* Vigil.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		18C7E4ED1CAB05D10BD4A868 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					835105B234838BB116C0129A = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 5619A840A7CA81A5286A70B1 /* Build configuration list for PBXProject "Vigil" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A72BF9D88F7105D37DD5B348;
+			productRefGroup = 05919A351C34C164D2CD8A50 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				835105B234838BB116C0129A /* Vigil */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		96D7A6EF30C98D8FA875C8C0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA5F384B2A6D8C89D0131D92 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C77FB82F8846C8D5F201A77E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E032839AC2515A58908D8437 /* DesignSystem.swift in Sources */,
+				5ACD9D8B0BDE1818888F87FF /* AccessibilityPermission.swift in Sources */,
+				232788D6C215CACC0FB2B0C6 /* AppCoordinator.swift in Sources */,
+				8333A877F148F456E67E803D /* BatteryMonitor.swift in Sources */,
+				9F4816A39F53755618C90FB4 /* CleaningModeManager.swift in Sources */,
+				6281F7BBA0CA65D14CB83BE0 /* CleaningTapBridge.swift in Sources */,
+				4DBBFDF26BD6E1998DA3388C /* HotKeyManager.swift in Sources */,
+				88782A276B567F2B1D1305B6 /* KeepAwakeManager.swift in Sources */,
+				E7A7ABC1D83B09B028B38C67 /* LaunchAtLogin.swift in Sources */,
+				EBC4A9C38B0DAF02E50EDC76 /* NotificationManager.swift in Sources */,
+				B4FADD112F10A7A8E9D25558 /* Preferences.swift in Sources */,
+				7346396EF2EB33B04C89F110 /* ScreenLocker.swift in Sources */,
+				C08712F933642916C20EDDA3 /* UsageLog.swift in Sources */,
+				09DE6676B7FD2DA40B5B83F0 /* AuxiliaryWindow.swift in Sources */,
+				D45B2E5DA96A2523D8962438 /* CleaningOverlayController.swift in Sources */,
+				323F20EECB1C0694C1646493 /* CleaningOverlayView.swift in Sources */,
+				4164721AC64695C1559C219B /* HotKeyRecorderView.swift in Sources */,
+				C36DBB4CF932CB40FDBF186D /* MenuContentView.swift in Sources */,
+				1D90495C62207088A2562612 /* OnboardingView.swift in Sources */,
+				28D3F3CC07E8D961A0AD4429 /* PreferencesView.swift in Sources */,
+				A7BBA2655CCD689C78444929 /* VigilApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0E47589FE5CE67F204BBD412 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		4D83A3D15128E76D9068A4E9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		67D30E19F68C10BDD498B516 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Vigil/Vigil.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Vigil/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = zw.co.munyaradzichigangawa.Vigil;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		25CC67F1754271301E6D29EA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Vigil/Vigil.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Vigil/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = zw.co.munyaradzichigangawa.Vigil;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5619A840A7CA81A5286A70B1 /* Build configuration list for PBXProject "Vigil" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0E47589FE5CE67F204BBD412 /* Debug */,
+				4D83A3D15128E76D9068A4E9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		098189B02C2BC08BFE6A4B49 /* Build configuration list for PBXNativeTarget "Vigil" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				67D30E19F68C10BDD498B516 /* Debug */,
+				25CC67F1754271301E6D29EA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 18C7E4ED1CAB05D10BD4A868 /* Project object */;
+}

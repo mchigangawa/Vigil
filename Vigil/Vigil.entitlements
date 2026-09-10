@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  App Sandbox is deliberately OFF.
+
+	  Cleaning Mode installs a session-level CGEventTap to swallow keyboard and
+	  pointer input system-wide, and Lock & Keep Awake posts a synthetic
+	  Control-Command-Q. Neither is permitted inside the App Sandbox, and some
+	  IOKit power-management assertions behave inconsistently there too.
+
+	  This is scoped to this target only. It has no effect on any other app on
+	  the machine, sandboxed or not.
+	-->
+	<key>com.apple.security.app-sandbox</key>
+	<false/>
+</dict>
+</plist>
